@@ -154,15 +154,15 @@ function boot_spacedeck() {
     spacedeck.route();
   });
 
-  window.addEventListener("paste", function(evt) {
-    if (evt.target.nodeName=="INPUT" || (evt.target.nodeName=="TEXTAREA" && evt.target.id!="clipboard-ta") || evt.target.contenteditable) {
-      // cancel
+  document.addEventListener("paste", function(evt) {
+    if (evt.target && (evt.target.nodeName=="INPUT" || (evt.target.nodeName=="TEXTAREA" && evt.target.id!="clipboard-ta") || evt.target.isContentEditable)) {
       return;
     }
-    if (spacedeck.active_space) {
+    
+    if (spacedeck && spacedeck.active_space) {
       spacedeck.handle_section_paste(evt);
     }
-  });
+  }, true);
 }
 
 document.addEventListener("DOMContentLoaded",function() {

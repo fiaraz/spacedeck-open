@@ -2201,6 +2201,8 @@ var SpacedeckSections = {
     handle_section_click: function(evt) {
       if (evt.target == evt.currentTarget) {
         this.deselect();
+        var ta = document.getElementById("clipboard-ta");
+        if (ta) ta.focus();
       }
     },
 
@@ -2269,10 +2271,44 @@ var SpacedeckSections = {
 
     handle_section_paste: function(evt) {
       if (this.editing_artifact_id) return;
+
+      var clipboardData = evt.clipboardData || (evt.originalEvent && evt.originalEvent.clipboardData);
+      
+      if (clipboardData && clipboardData.items) {
+        var items = clipboardData.items;
+        
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") !== -1) {
+            try {
+              var fileBlob = items[i].getAsFile();
+              if (fileBlob) {
+                var file = new File([fileBlob], "Pasted_Image.png", { type: fileBlob.type });
+                
+                var fakeEvt = {
+                  pageX: window.innerWidth / 2,
+                  pageY: window.innerHeight / 2
+                };
+                var el = document.getElementById("space");
+                if (el) {
+                  fakeEvt.pageX = el.scrollLeft + (el.clientWidth / 2);
+                  fakeEvt.pageY = el.scrollTop + (el.clientHeight / 2);
+                }
+                
+                this.create_artifact_via_upload(fakeEvt, file, false);
+                return;
+              }
+            } catch (err) {
+              console.error("Error in image paste: " + err.message);
+              return;
+            }
+          }
+        }
+      }
+
       var pastedText = null;
 
       try {
-        pastedText = evt.clipboardData.getData('text/plain');
+        pastedText = clipboardData ? clipboardData.getData('text/plain') : null;
       } catch (e) {
       }
 
