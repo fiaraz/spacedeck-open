@@ -35,11 +35,11 @@
   //@include transition-transform( 0.1s 0s ease-in-out);
   white-space: nowrap;
   position: relative;
-  height: 60px;
-  min-width: 60px;
-  line-height: 60px;
-  padding: 0 20px;
-  font-size: 20px;
+  height: 44px;
+  min-width: 44px;
+  line-height: 44px;
+  padding: 0 14px;
+  font-size: 16px;
   display: inline-block;
   border: none;
   outline: none;
@@ -507,7 +507,7 @@
 
   &.btn-icon-labeled {
     font-size: 0px;
-    min-width: 60px;
+    min-width: 44px;
 
     .letter,
     .number,
@@ -526,12 +526,12 @@
       -webkit-transition: opacity 0.1s 0s ease-in-out, margin 0.1s 0s ease-in-out;
     }
 
-    .letter {line-height: 42px; }
-    .icon:before {line-height: 42px; }
+    .letter {line-height: 30px; }
+    .icon:before {line-height: 30px; }
     .icon-label {
-      font-size: 11px;
+      font-size: 10px;
       text-align: center;
-      margin: 8px 0;
+      margin: 4px 0;
       display: block;
       position: absolute;
       bottom: 0px;
@@ -546,13 +546,13 @@
     }
 
     &.hover {
-      .letter, .number, .icon:before { line-height: 60px; }
+      .letter, .number, .icon:before { line-height: 44px; }
       .letter, .number, .icon:before { @include transition( line-height 0.1s 0s ease-in-out); }
       .icon-label { opacity: 0; margin: 0; }
 
       &:hover {
-        .icon-label { opacity: 1; margin: 8px 0; }
-        .letter, .number, .icon:before { line-height: 42px; } 
+        .icon-label { opacity: 1; margin: 4px 0; }
+        .letter, .number, .icon:before { line-height: 30px; } 
       }
 
       &.btn-xl {
@@ -1101,30 +1101,4 @@
   border-radius: 50px;
 }
 
-@media (max-width: 768px) {
-  .btn {
-    height: 48px;
-    min-width: 48px;
-    line-height: 48px;
-    padding: 0 12px;
-    font-size: 16px;
-  }
-  .btn.btn-icon-labeled {
-    min-width: 48px;
-  }
-  .btn.btn-icon-labeled .letter {
-    line-height: 32px;
-  }
-  .btn.btn-icon-labeled .icon:before {
-    line-height: 32px;
-  }
-  .btn.btn-icon-labeled .icon-label {
-    font-size: 9px;
-    margin: 4px 0;
-  }
-  .btn.btn-icon-labeled.hover .letter,
-  .btn.btn-icon-labeled.hover .number,
-  .btn.btn-icon-labeled.hover .icon:before {
-    line-height: 48px;
-  }
-}
+
