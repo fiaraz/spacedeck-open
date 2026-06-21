@@ -7,7 +7,7 @@ services:
     ports:
       # We bind to 172.17.0.1 so it doesn't expose to the public internet.
       # Caddy will reverse proxy to this port.
-      - "172.17.0.1:9666:9666"
+      - "9666:9666"
     volumes:
       - ./storage:/app/storage
       - ./database:/app/database
