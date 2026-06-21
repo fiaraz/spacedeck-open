@@ -397,11 +397,11 @@
 
     &.folder-up:before,
     &.folder .item-type:before {
-      @extend .icon-folder:before;
+      @extend .icon-folder, :before;
     }
 
     &.space .item-type:before {
-      @extend .icon-page-horizontal:before;
+      @extend .icon-page-horizontal, :before;
     }
 
     > a {

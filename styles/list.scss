@@ -415,22 +415,22 @@
     }
 
     &.home > span:after{
-      @extend .icon-home:before;
+      @extend .icon-home, :before;
       opacity: 0.25;
     }
 
     &.folder-up > span:after,
     &.folder > span:after {
-      @extend .icon-folder:before;
+      @extend .icon-folder, :before;
       color: $yellow;
     }
 
     &.space > span:after {
-      @extend .icon-page-horizontal:before;
+      @extend .icon-page-horizontal, :before;
       opacity: 0.25;
     }
     &.shaed > span:after {
-      @extend .icon-page-horizontal-up:before;
+      @extend .icon-page-horizontal-up, :before;
       opacity: 0.25;
     }
 
@@ -458,7 +458,7 @@
           right: -4px;
           color: $medium !important;
           color: $light !important;
-          @extend .icon-shape-circle:before;
+          @extend .icon-shape-circle, :before;
         }
 
 

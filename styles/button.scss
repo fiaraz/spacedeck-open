@@ -339,7 +339,7 @@
 
     &:before {
       @include scale(1,1);
-      @extend .icon-triangle-3-bottom:before;
+      @extend .icon-triangle-3-bottom, :before;
     }
 
     &:after {
@@ -1099,4 +1099,32 @@
   margin: 4px;
   z-index: 100;
   border-radius: 50px;
+}
+
+@media (max-width: 768px) {
+  .btn {
+    height: 48px;
+    min-width: 48px;
+    line-height: 48px;
+    padding: 0 12px;
+    font-size: 16px;
+  }
+  .btn.btn-icon-labeled {
+    min-width: 48px;
+  }
+  .btn.btn-icon-labeled .letter {
+    line-height: 32px;
+  }
+  .btn.btn-icon-labeled .icon:before {
+    line-height: 32px;
+  }
+  .btn.btn-icon-labeled .icon-label {
+    font-size: 9px;
+    margin: 4px 0;
+  }
+  .btn.btn-icon-labeled.hover .letter,
+  .btn.btn-icon-labeled.hover .number,
+  .btn.btn-icon-labeled.hover .icon:before {
+    line-height: 48px;
+  }
 }
