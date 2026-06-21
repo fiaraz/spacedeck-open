@@ -1287,7 +1287,16 @@ var SpacedeckSections = {
           if (old_version) {
             this.update_properties([id], [old_version]);
           }
-        } else {
+        } else if (step.action == "create") {
+          // Undoing a creation means deleting the artifact
+          var a = this.find_artifact_by_id(id);
+          if (a) {
+            delete_artifact(a);
+            var idx = this.active_space_artifacts.indexOf(a);
+            this.active_space_artifacts.splice(idx, 1);
+          }
+        } else { // "delete"
+          // Undoing a deletion means recreating the artifact
           delete old_version._id;
           save_artifact(old_version, function(restored_a) {
             this.update_board_artifact_viewmodel(restored_a);
@@ -1309,7 +1318,33 @@ var SpacedeckSections = {
       console.log("redo popped: ",step);
       this.undo_stack.push(step);
 
-      this.update_properties(step.artifact_ids, step.changes);
+      if (step.action == "update") {
+        this.update_properties(step.artifact_ids, step.changes);
+      } else if (step.action == "create") {
+        // Redoing a creation means recreating it
+        for (var i=0; i<step.artifact_ids.length; i++) {
+          var id = step.artifact_ids[i];
+          var old_version = this.find_artifact_in_array(step.snapshot, {_id:id});
+          if (old_version) {
+            delete old_version._id;
+            save_artifact(old_version, function(restored_a) {
+              this.update_board_artifact_viewmodel(restored_a);
+              this.active_space_artifacts.push(restored_a);
+            }.bind(this));
+          }
+        }
+      } else { // "delete"
+        // Redoing a deletion means deleting it again
+        for (var i=0; i<step.artifact_ids.length; i++) {
+          var id = step.artifact_ids[i];
+          var a = this.find_artifact_by_id(id);
+          if (a) {
+            delete_artifact(a);
+            var idx = this.active_space_artifacts.indexOf(a);
+            this.active_space_artifacts.splice(idx, 1);
+          }
+        }
+      }
       this.update_selection_metrics();
     },
 
@@ -1600,6 +1635,13 @@ var SpacedeckSections = {
         this.update_board_artifact_viewmodel(saved_item);
         this.active_space_artifacts.push(saved_item);
 
+        this.begin_transaction();
+        this.push_to_undo({
+          action: "create",
+          artifact_ids: [saved_item._id],
+          snapshot: [saved_item]
+        });
+
         if (!url) {
           this.select(null, saved_item);
         }
@@ -1692,6 +1734,13 @@ var SpacedeckSections = {
         this.update_board_artifact_viewmodel(saved_item);
         this.active_space_artifacts.push(saved_item);
 
+        this.begin_transaction();
+        this.push_to_undo({
+          action: "create",
+          artifact_ids: [saved_item._id],
+          snapshot: [saved_item]
+        });
+
         this.select(null, saved_item);
       }.bind(this));
     },
@@ -1730,9 +1779,15 @@ var SpacedeckSections = {
       }
 
       save_artifact(a, function(saved_item) {
-
         this.update_board_artifact_viewmodel(saved_item);
         this.active_space_artifacts.push(saved_item);
+
+        this.begin_transaction();
+        this.push_to_undo({
+          action: "create",
+          artifact_ids: [saved_item._id],
+          snapshot: [saved_item]
+        });
 
         this.select(null, saved_item);
       }.bind(this));
@@ -1819,6 +1874,14 @@ var SpacedeckSections = {
         a = updated_a;
         this.update_board_artifact_viewmodel(a);
         this.active_space_artifacts.push(a);
+
+        this.begin_transaction();
+        this.push_to_undo({
+          action: "create",
+          artifact_ids: [a._id],
+          snapshot: [a]
+        });
+
         save_artifact_file(a, file, file.name, function(updated_a) {
 
           console.log("file saved. result: ",updated_a);
