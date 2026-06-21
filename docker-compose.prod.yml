@@ -11,5 +11,3 @@ services:
     volumes:
       - ./storage:/app/storage
       - ./database:/app/database
-    environment:
-      - NODE_ENV=production
