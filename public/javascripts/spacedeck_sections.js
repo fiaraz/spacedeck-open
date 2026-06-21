@@ -211,6 +211,26 @@ var SpacedeckSections = {
       Mousetrap.bind(['shift'], function(evt)         { this.isShift = true; }.bind(this), 'keydown');
       Mousetrap.bind(['shift'], function(evt)         { this.isShift = false; }.bind(this), 'keyup');
       Mousetrap.bind('shift+up', function(evt)        { this.if_editable(function() {this.nudge_selected_artifacts(0,-10,evt);}) }.bind(this));
+
+      // Keyboard shortcuts: p = pen, t = text
+      document.addEventListener('keydown', function(evt) {
+        var el = evt.target || evt.srcElement;
+        var tag = el.tagName;
+        // Allow shortcuts when focus is on the hidden clipboard textarea
+        var isClipboard = (el.id === 'clipboard-ta');
+        if (!isClipboard && (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT')) return;
+        if (el.isContentEditable) return;
+        if (evt.metaKey || evt.ctrlKey || evt.altKey) return;
+
+        if (evt.key === 'p' || evt.key === 'P') {
+          evt.preventDefault();
+          this.start_drawing_scribble(evt);
+        } else if (evt.key === 't' || evt.key === 'T') {
+          evt.preventDefault();
+          this.start_adding_note(evt);
+        }
+      }.bind(this));
+
       $(document).bind("beforecopy", this.handle_onbeforecopy.bind(this));
       $(window).bind("beforeunload", this.handle_onunload.bind(this));
       $(window).bind("resize", this.handle_window_resize.bind(this));
