@@ -12,6 +12,7 @@ const os = require('os');
 const db = require('../models/db');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
+const { v4: uuidv4 } = require('uuid');
 
 const mime = require('mime-types');
 const fileType = require('file-type');
@@ -327,14 +328,61 @@ module.exports = {
 
             if (!err) {
               if (mimeType == "application/pdf") {
-                var firstImagePath =  localFilePath + ".jpeg";
-                exec.execFile("gs", ["-sDEVICE=jpeg","-dNOPAUSE", "-dJPEGQ=80", "-dBATCH", "-dFirstPage=1", "-dLastPage=1", "-sOutputFile=" + firstImagePath, "-r90", "-f", localFilePath], {}, function(error, stdout, stderr) {
+                var firstImagePath =  localFilePath + "-page-%03d.jpeg";
+                exec.execFile("gs", ["-sDEVICE=jpeg","-dNOPAUSE", "-dJPEGQ=80", "-dBATCH", "-sOutputFile=" + firstImagePath, "-r90", "-f", localFilePath], {}, function(error, stdout, stderr) {
                   if(error === null) {
-                    resizeAndUploadImage(a, mimeType, size, fileName + ".jpeg", fileName, firstImagePath, localFilePath, function(err, a) {
-                      fs.unlink(firstImagePath, function (err) {
-                        payloadCallback(err, a);
-                      });
-                    });
+                    var additionalArtifacts = [];
+                    var pageNum = 1;
+                    
+                    async.whilst(
+                      function test(cb) {
+                        var pagePath = localFilePath + "-page-" + ("000" + pageNum).slice(-3) + ".jpeg";
+                        cb(null, fs.existsSync(pagePath));
+                      },
+                      function iter(cb) {
+                        var pagePath = localFilePath + "-page-" + ("000" + pageNum).slice(-3) + ".jpeg";
+                        
+                        if (pageNum === 1) {
+                          resizeAndUploadImage(a, mimeType, size, fileName + "-1.jpeg", fileName, pagePath, localFilePath, function(err, updatedA) {
+                            fs.unlink(pagePath, function() {
+                              pageNum++;
+                              cb(err);
+                            });
+                          });
+                        } else {
+                          // Duplicate artifact properties
+                          var newA = Object.assign({}, a.dataValues ? a.dataValues : a);
+                          delete newA._id;
+                          
+                          var cols = 5;
+                          var i = pageNum - 1;
+                          var col = i % cols;
+                          var row = Math.floor(i / cols);
+                          
+                          newA.x = a.x + (a.w + 40) * col;
+                          newA.y = a.y + (a.h + 40) * row;
+                          
+                          newA._id = uuidv4();
+                          
+                          db.Artifact.create(newA).then(createdArt => {
+                            resizeAndUploadImage(createdArt, "image/jpeg", size, fileName + "-" + pageNum + ".jpeg", fileName + "-" + pageNum + ".jpeg", pagePath, pagePath, function(err, finalA) {
+                              // resizeAndUploadImage automatically unlinks the originalFilePath (pagePath)
+                              additionalArtifacts.push(finalA);
+                              var db = require('../models/db');
+                              db.unpackArtifact(finalA);
+                              require('../helpers/redis').sendMessage("create", "Artifact", finalA);
+                              pageNum++;
+                              cb(err);
+                            });
+                          }).catch(err => {
+                            cb(err);
+                          });
+                        }
+                      },
+                      function done(err) {
+                        payloadCallback(err, a, additionalArtifacts);
+                      }
+                    );
                   } else {
                     payloadCallback(error, null);
                   }

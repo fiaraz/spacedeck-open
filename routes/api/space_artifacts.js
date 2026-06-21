@@ -142,12 +142,19 @@ router.post('/:artifact_id/payload', function(req, res, next) {
     };
 
     stream.on('finish', function() {
-      payloadConverter.convert(a, fileName, localFilePath, function(error, artifact) {
+      payloadConverter.convert(a, fileName, localFilePath, function(error, artifact, additionalArtifacts) {
         if (error) res.status(400).json(error);
         else {
           db.Space.update({ updated_at: new Date() }, {where: {_id: req.space._id}});
           db.unpackArtifact(artifact);
           res.distributeUpdate("Artifact", artifact, true);
+
+          if (additionalArtifacts && additionalArtifacts.length > 0) {
+            additionalArtifacts.forEach(function(addArt) {
+              db.unpackArtifact(addArt);
+              redis.sendMessage("create", "Artifact", addArt);
+            });
+          }
         }
       }, progressCallback);
     });
