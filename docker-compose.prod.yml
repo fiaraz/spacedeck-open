@@ -1,0 +1,15 @@
+version: "3"
+services:
+  spacedeck:
+    build: .
+    container_name: spacedeck_prod
+    restart: unless-stopped
+    ports:
+      # We bind to 127.0.0.1 so it doesn't expose to the public internet.
+      # Caddy will reverse proxy to this port.
+      - "127.0.0.1:9666:9666"
+    volumes:
+      - ./storage:/app/storage
+      - ./database:/app/database
+    environment:
+      - NODE_ENV=production
